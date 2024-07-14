@@ -10,8 +10,8 @@ fs.mkdir(imagesDir, { recursive: true }).catch(console.error);
 //copy channelAccessToken and chanelScret from Line Devoloper
 const app = express();
 const config = {
-  channelAccessToken: 'c/ucBKfHIyZnxnwedmo7eTUyuTfOzubRqnZwpHVzCrvs+34eeoZaNx3APuH7t7IPekaZJ/tnFV0vg2o5GZwRqcRRHodAHYHabqiW4Onfg3iN4yC6z9r2Uv/+roMu7MyD8bnJR6ClHNQnY0eGTg3U8wdB04t89/1O/w1cDnyilFU=',
-  channelSecret: '093d75037d81ef45708be8beaf8f60f6'
+  channelAccessToken: 'your chanalAccessToken',
+  channelSecret: 'Your chanalSecret'
 };
 
 const client = new line.Client(config);
