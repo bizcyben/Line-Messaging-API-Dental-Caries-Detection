@@ -4,14 +4,14 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process');
 
-// สร้างโฟลเดอร์ images ด้วย
 const imagesDir = path.join(__dirname, 'images');
 fs.mkdir(imagesDir, { recursive: true }).catch(console.error);
-//copy channelAccessToken and chanelScret from Line Devoloper
+
 const app = express();
 const config = {
-  channelAccessToken: 'your chanalAccessToken',
-  channelSecret: 'Your chanalSecret'
+  //change 
+  channelAccessToken: 'your channelAccessToken',
+  channelSecret: 'your channelSecret'
 };
 
 const client = new line.Client(config);
@@ -28,52 +28,55 @@ app.post('/webhook', line.middleware(config), async (req, res) => {
 });
 
 async function handleEvent(event) {
-    if (event.type !== 'message' || event.message.type !== 'image') {
-      return null;
-    }
-  
-    try {
-      const imagePath = await downloadImage(event.message.id);
-      const { outputPath: detectedImagePath, detections } = await runYoloModel(imagePath);
-  
-      let messages = [];
-      
-      if (detections && detections.length > 0) {
-        const detectionText = detections.map(d => `${d.name} (${Math.round(d.confidence * 100)}%)`).join(', ');
-        messages.push({ type: 'text', text: `ตรวจพบ: ${detectionText}` });
-        
-        // เพิ่มข้อความอธิบายสี
-        const colorExplanation = "สีที่ใช้: Initial(ระยะแรกเริ่ม) - เขียว, Moderate(ระยะปานกลาง) - เหลือง, Advanced(ระยะรุนแรง) - แดง";
-        messages.push({ type: 'text', text: colorExplanation });
-      } else {
-        messages.push({ type: 'text', text: 'ไม่พบวัตถุที่ตรงกับเงื่อนไขในภาพ' });
-      }
-  
-      // copy https from ngrok amd replace on this host
-      const imageUrl = `https://7554-61-7-228-206.ngrok-free.app/images/${path.basename(detectedImagePath)}`;
-      messages.push({
-        type: 'image',
-        originalContentUrl: imageUrl,
-        previewImageUrl: imageUrl
-      });
-  
-      console.log('Sending messages:', JSON.stringify(messages));
-      await client.replyMessage(event.replyToken, messages);
-  
-      
-      await fs.unlink(imagePath);
-      await fs.unlink(detectedImagePath);
-  
-      console.log('Task completed successfully');
-  
-    } catch (error) {
-      console.error('Error processing image:', error);
-      await client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: 'เกิดข้อผิดพลาดในการประมวลผลภาพ กรุณาลองใหม่อีกครั้ง'
-      });
-    }
+  if (event.type !== 'message' || event.message.type !== 'image') {
+    return null;
   }
+
+  try {
+    const imagePath = await downloadImage(event.message.id);
+    const { outputPath: detectedImagePath, detections } = await runYoloModel(imagePath);
+
+    let messages = [];
+
+    if (detections && detections.length > 0) {
+      const detectionText = detections.map(d => `${d.name} (${Math.round(d.confidence * 100)}%)`).join(', ');
+      messages.push({ type: 'text', text: `ตรวจพบ: ${detectionText}` });
+
+      const colorExplanation = "สีที่ใช้: \n 🟢เขียว=Initial(ระยะแรกเริ่ม)\n 🟡เหลือง=Moderate(ระยะปานกลาง)\n 🔴แดง=Advanced(ระยะรุนแรง)";
+      messages.push({ type: 'text', text: colorExplanation });
+    } else {
+      messages.push({ type: 'text', text: 'ไม่พบวัตถุที่ตรงกับเงื่อนไขในภาพ' });
+    }
+    //copy path from ngrok
+    const imageUrl = `your localhost/images/${path.basename(detectedImagePath)}`;
+    console.log('Image URL:', imageUrl);
+
+    messages.push({
+      type: 'image',
+      originalContentUrl: imageUrl,
+      previewImageUrl: imageUrl
+    });
+
+    console.log('Sending messages:', JSON.stringify(messages));
+    await client.replyMessage(event.replyToken, messages);
+
+    // Send follow-up message
+    await client.pushMessage(event.source.userId, { type: 'text', text: 'นัดคิวเข้ารับการรักษากดลิงค์นี้👇\n https://page.line.me/475ptmfj ' });
+    await client.pushMessage(event.source.userId, { type: 'text', text: 'เพื่อสุขภาพฟันที่ดีของน้องๆ👍🏻!!!' });
+
+    await fs.unlink(imagePath);
+    await fs.unlink(detectedImagePath);
+
+    console.log('Task completed successfully');
+
+  } catch (error) {
+    console.error('Error processing image:', error);
+    await client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: 'เกิดข้อผิดพลาดในการประมวลผลภาพ กรุณาลองใหม่อีกครั้ง'
+    });
+  }
+}
 
 async function downloadImage(messageId) {
   try {
