@@ -6,9 +6,10 @@ from ultralytics import YOLO
 
 # กำหนดสีสำหรับแต่ละคลาส ในรูปแบบ BGR
 COLORS = {
-    'initial': (34,139,34),    # สีเขียว
-    'moderate': (0,255,255), # สีเหลือง 
-    'advanced': (0, 0, 255)    # สีแดง
+    'initial': (0, 255, 255),   # สีเขียว
+    'moderate': (0, 165, 255),  # สีเหลือง
+    'advanced': (0, 0, 255),    # สีแดง
+    'normal': (34, 139, 34)       # สีฟ้า
 }
 
 def detect_objects(model_path, image_path):
